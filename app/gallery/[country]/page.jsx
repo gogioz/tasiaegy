@@ -7,9 +7,7 @@ import JourneyPath from "@/components/JourneyPath";
 import { getGalleryItems, slugify } from "@/lib/gallery";
 import { EGYPT_PLACES } from "@/lib/egypt-places-seed";
 
-export default async function CountryGalleryPage({ params }) {
-  const { country: countrySlug } = await params;
-
+async function getCountryItems(countrySlug) {
   let items = EGYPT_PLACES;
   try {
     const live = await getGalleryItems();
@@ -18,15 +16,30 @@ export default async function CountryGalleryPage({ params }) {
     // Firebase not configured yet.
   }
 
-  const countryItems = items.filter(
+  return items.filter(
     (item) => slugify(item.country || "Egypt") === countrySlug
   );
+}
+
+export async function generateMetadata({ params }) {
+  const { country: countrySlug } = await params;
+  const countryItems = await getCountryItems(countrySlug);
+  if (countryItems.length === 0) return {};
+
+  const countryName = countryItems[0].country || "Egypt";
+  return {
+    title: `${countryName} | Gallery | TASIA`,
+    description: `${countryItems.length} places in ${countryName}, one story.`,
+  };
+}
+
+export default async function CountryGalleryPage({ params }) {
+  const { country: countrySlug } = await params;
+  const countryItems = await getCountryItems(countrySlug);
 
   if (countryItems.length === 0) {
     notFound();
   }
-
-  const countryName = countryItems[0].country || "Egypt";
 
   const stops = countryItems.map((item) => ({
     id: item.id,
@@ -39,24 +52,20 @@ export default async function CountryGalleryPage({ params }) {
     <>
       <Navbar />
       <main>
-        <section className="mx-auto max-w-3xl px-6 pt-16 text-center lg:px-10">
+        <section className="mx-auto w-full max-w-7xl px-4 pt-8 sm:px-6 sm:pt-12 lg:px-10 lg:pt-16">
           <Link
             href="/gallery"
-            className="inline-flex items-center gap-2 text-sm text-charcoal/60 hover:text-navy"
+            className="group inline-flex items-center gap-2 rounded-full border border-charcoal/10 px-4 py-2 text-sm text-charcoal/70 transition-colors hover:border-navy/30 hover:text-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy"
           >
-            <ArrowLeft size={16} />
+            <ArrowLeft
+              size={16}
+              className="transition-transform duration-200 group-hover:-translate-x-0.5 motion-reduce:transition-none"
+            />
             All countries
           </Link>
-{/* 
-          <h1 className="mt-6 font-display text-4xl italic leading-tight text-charcoal sm:text-5xl">
-            {countryName}
-          </h1>
-          <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-charcoal/70">
-            {stops.length} places, one story.
-          </p> */}
         </section>
 
-        <section className="mx-auto max-w-7xl px-6 py-20 lg:px-10">
+        <section className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-20">
           <JourneyPath stops={stops} />
         </section>
       </main>
