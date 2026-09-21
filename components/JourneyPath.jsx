@@ -266,7 +266,7 @@ export default function JourneyPath({ stops }) {
                     transform: visible ? "translateY(0)" : "translateY(24px)",
                   }}
                 >
-                  <div className="relative aspect-[4/3] overflow-hidden rounded-3xl  shadow-sm sm:aspect-[3/2]">
+                  <div className="relative aspect-[4/3] overflow-hidden sm:aspect-[3/2]">
                     <Image
                       src={stop.image}
                       alt={stop.title}
